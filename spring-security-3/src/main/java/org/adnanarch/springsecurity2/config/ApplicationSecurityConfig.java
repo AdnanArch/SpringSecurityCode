@@ -4,22 +4,22 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-import javax.sql.DataSource;
-
 @Configuration
+@EnableWebSecurity
 public class ApplicationSecurityConfig {
     // With Lambda DSL Latest Code
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests((requests) -> requests
+        http.csrf((AbstractHttpConfigurer::disable))
+                .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/myBalance", "/myLoans", "/myCards", "myAccount").authenticated()
-                        .requestMatchers("/contact", "/notice").permitAll())
+                        .requestMatchers("/contact", "/notice", "/register").permitAll())
                 .formLogin(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults());
         return http.build();
@@ -62,22 +62,20 @@ public class ApplicationSecurityConfig {
     }*/
 
 
-    /*Leveraging the JDBC */
+    /*Leveraging the JDBC for authentication */
+//    @Bean
+//    public UserDetailsService userDetailsService(DataSource dataSource){
+//        return new JdbcUserDetailsManager(dataSource);
+//    }
 
-    @Bean
-    public UserDetailsService userDetailsService(DataSource dataSource){
-        return new JdbcUserDetailsManager(dataSource);
-    }
     /**
-     *
      * NoOpPasswordEncoder is Not recommended for Production Grade Apps
      * Use only for non-production
      *
      * @return PasswordEncoder
-     *
-     * */
+     */
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return NoOpPasswordEncoder.getInstance();
     }
 
